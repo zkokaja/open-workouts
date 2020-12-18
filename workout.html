@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script lang="javascript">
+            // TODO: progress bar
+            // TODO: TTS https://daily-dev-tips.com/posts/vanilla-javascript-text-to-speech/
+            // TODO: click sound every second
+            workout = {
+                'name': 'The Scientific 7-Minute Workout',
+                'steps': [
+                    {
+                        'name': 'Get ready',
+                        'duration_sec': 5,
+                        'description': 'Get ready!',
+                        'color': '#f2d624'
+                    },
+                    {
+                        'name': 'Jumping Jacks',
+                        'duration_sec': 10,
+                        'color': '#5bf22f'
+
+                    },
+                    {
+                        'name': "You're done!",
+                        'duration_sec': 0,
+                        'color': '#f2243c'
+                    }
+                ]
+            }
+
+            Number.prototype.toHHMMSS = function () {
+                // Adapted from https://stackoverflow.com/questions/6312993/
+                var sec_num = this.valueOf();
+                var hours   = Math.floor(sec_num / 3600);
+                var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+                var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+                if (hours   < 10) {hours   = "0"+hours;}
+                if (minutes < 10) {minutes = "0"+minutes;}
+                if (seconds < 10) {seconds = "0"+seconds;}
+
+                // return hours+':'+minutes+':'+seconds;
+                return minutes + ':' + seconds;
+            }
+
+            i = 0
+            current_second = 0
+            interval_timer = 0 // ? null
+
+            function next() {
+                // Get current step
+                step = workout.steps[i]
+                clearInterval(interval_timer)
+
+                // Update UI
+                document.getElementById("step-name").innerText = step.name
+                document.body.style.background = step.color
+
+                // Speak step name, TODO if audio enable
+                let speech = new SpeechSynthesisUtterance('Now ' + step.name);
+                window.speechSynthesis.speak(speech);
+
+                // Start the countdown timer
+                if (step.duration_sec > 0) {
+                    current_second = step.duration_sec
+                    interval_timer = setInterval(count_down, 1000)
+                }
+                else {
+                    clearInterval()
+                    document.getElementById("timer").innerText = '00:00'
+                }
+
+                // Kick off next step
+                if (i + 1 < workout.steps.length) {
+                    setTimeout(next, 1000 * (step.duration_sec + 1))  // why do i need to add + 1?
+                    i += 1
+                }
+            }
+
+            function count_down() {
+                console.log(current_second)
+                document.getElementById("timer").innerText = Number(current_second).toHHMMSS()
+                if (current_second > 0) {
+                    current_second -= 1
+                }
+            }
+
+            function start() {
+                document.getElementById("workout-name").innerText = workout.name
+                next()
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <h1 id="workout-name" />
+        <h2 id="step-name" />
+        <h3 id="timer" />
+    </body>
+</html>
