@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            nav {
+                width: 50%;
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            nav ul {
+                line-height: 1.5em;
+            }
+
+            nav ul li {
+                list-style: none;
+                padding: 2px 16px;
+                margin-top: 2em;
+            }
+
+            nav ul li a {
+                text-decoration: none;
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+            .workout-card {
+                /* background-color: #59d9ef; */
+                box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                transition: 0.3s;
+            }
+
+            .workout-card:hover {
+                box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+            }
+        </style>
+        <script lang="text/javascript", src="workouts.js"></script>
+        <script lang="text/javascript">
+            function start() {
+                const workoutList = document.getElementById('workout-list')
+                for (let workout of workouts) {
+                    const divTag = document.createElement('li');
+                    divTag.classList.add('workout-card');
+                    divTag.innerHTML = `<a href='workout.html?id=0'>${workout.name}</a><p>${workout.description}</p>`
+                    workoutList.appendChild(divTag);
+                }
+            }
+        </script>
+    </head>
+    <body onload='start()'>
+        <nav>
+            <ul id='workout-list' />
+        </nav>
+    </body>
+</html>
