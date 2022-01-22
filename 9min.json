@@ -1,0 +1,21 @@
+{
+    "name": "The 9 Minute Strength Workout",
+    "author": "Jordan Metzl",
+    "description": "The following nine moves are strength training exercises that you may have seen before. Alone, they work a set group of muscles, but strung together, these nine exercises become a complete, whole-body workout.  Dr. Jordan Metzl, a sports medicine physician at the Hospital for Special Surgery in New York, has broken down the nine exercises into three sets of three. Before you begin each set, set a timer (or work out near a watch with a second hand). If you are just starting to work out, do each exercise as hard as you can for one minute, followed by the next, until you complete the first set. Then, take a one minute break before moving on to set two, in which the exercises should also be performed for one minute each.",
+    "source": "https://www.nytimes.com/guides/well/strength-training-plyometrics",
+    "steps": [
+        { "name": "Get ready", "duration_sec": 3, "type": "rest" },
+        { "name": "Bodyweight Squat", "duration_sec": 60, "type": "activity" },
+        { "name": "Pushup", "duration_sec": 60, "type": "activity" },
+        { "name": "Mountain Climbers", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 60, "type": "rest"},
+        { "name": "Forearm Plank", "duration_sec": 60, "type": "activity" },
+        { "name": "Bodyweight Split Squat", "duration_sec": 60, "type": "activity" },
+        { "name": "Single Leg Hip Raise", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 60, "type": "rest"},
+        { "name": "Burpee with Push-Up", "duration_sec": 60, "type": "activity" },
+        { "name": "Single-Leg Toe Touches", "duration_sec": 60, "type": "activity" },
+        { "name": "Leg Raises", "duration_sec": 60, "type": "activity" },
+        { "name": "Done", "duration_sec": 0}
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "name": "The Advanced 7-Minute Workout",
+    "author": "Gretchen Reynolds",
+    "description": "A more demanding nine-step regimen than the original 7-Minute Workout, one that requires a couple of dumbbells but still takes only seven minutes.",
+    "source": "https://well.blogs.nytimes.com/2014/10/24/the-advanced-7-minute-workout",
+    "steps": [
+        { "name": "Get ready", "duration_sec": 5, "type": "rest" },
+        { "name": "Reverse Lunge, Elbow Instep, Alternate", "duration_sec": 30, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Lateral Pillar Bridge (L)", "duration_sec": 30, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Push-Up to Row to Burpee", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Lateral Pillar Bridge (R)", "duration_sec": 30, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Single-Leg Romanian Dead Lift to Curl to Press (L)", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Single-Leg Romanian Dead Lift to Curl to Press (R)", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Plank With Arm Lift", "duration_sec": 30, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Lateral Lunge to Overhead Triceps Extension", "duration_sec": 60, "type": "activity" },
+        { "name": "rest", "duration_sec": 10, "type": "rest"},
+        { "name": "Bent-Over Row", "duration_sec": 60, "type": "activity" },
+        { "name": "You're done!", "duration_sec": 0 }
+    ]
+}

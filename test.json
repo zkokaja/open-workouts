@@ -1,0 +1,12 @@
+{
+    "name": "Test Workout",
+    "author": "Zaid Zada",
+    "description": "This is merely a test.",
+    "steps": [
+        { "name": "Get ready", "duration_sec": 3, "type": "rest" },
+        { "name": "Jumping Jacks", "duration_sec": 5, "type": "activity" },
+        { "name": "rest", "duration_sec": 5, "type": "rest"},
+        { "name": "Wall sit", "duration_sec": 3, "type": "activity" },
+        { "name": "You're done!", "duration_sec": 0 }
+    ]
+}

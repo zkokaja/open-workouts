@@ -1,104 +1,307 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
+            /* Theme heavily inspired by http://kellylougheed.com/hiit/ */
+            body {
+	            /* font-family: 'Oswald', 'Helvetica Neue', arial; */
+	            font-family: 'Helvetica', Arial;
+	            text-align: center;
+	            text-transform: uppercase;
+	            margin: 0;
+	            color: rgba(255,255,255,.7);
+	            background: #c9c9c9;
+            }
+
             #container {
-                text-align: center;
+                width: 40%;
                 margin: 0 auto;
+                margin-top: 20px;
+                padding-top: 20px;
+                padding-bottom: 20px;
+                border-radius: 20px;
+                box-shadow: 10px 10px rgba(0,0,0,.3);
+                background: rgba(0,0,0,.1);
+            }
+
+            @media screen and (max-width: 600px) {
+              #container {
+                  margin: 0;
+                  width: 100%;
+                  height: 100vh;
+                  border-radius: 0;
+              }
+            }
+
+            .header {
+	            margin: 10px auto;
+	            letter-spacing: 1px;
+            }
+            .header p {
+	            margin: 0;
+	            padding: 0px;
+	            font-size: 1em;
+	            font-weight: lighter;
+	            color: rgba(255,255,255,.8);
+            }
+
+            hr {
+                background: rgba(0,0,0,.1);
+                border: 5px solid rgba(0,0,0,.1);
+            }
+
+            .subheader p {
+                font-size: 3em;
+                font-weight: 300;
+                letter-spacing: 5px;
+                /* background: rgba(0,0,0,.1); */
+                color: rgba(255,255,255,.8);
+                margin: 10px 0 -30px 0;
+            }
+
+            #timer {
+                font-size: 10em;
+                font-weight: 200;
+	            font-family: 'Oswald', 'Helvetica Neue', arial;
+	            color: rgba(255,255,255,.9);
+	            margin: 20px;
+            }
+
+            #next-up {
+                color: rgba(255,255,255,.8);
+            }
+
+            button, input {
+	            color: rgba(255,255,255,.7);
+	            font-size: 1em;
+	            border-radius: 10px;
+            }
+
+            button {
+	            padding: 15px 25px;
+	            border: none;
+	            background: rgba(0,0,0,.3);
+	            letter-spacing: 1px;
+	            /* font-family: 'Oswald', 'Helvetica Neue', arial; */
+	            text-transform: uppercase;
+            }
+
+            button:hover {
+	            cursor: pointer;
+	            background: rgba(0,0,0,.15);
             }
         </style>
-        <script lang="text/javascript", src="workouts.js"></script>
         <script lang="text/javascript">
-            // TODO: progress bar
-            // TODO: TTS https://daily-dev-tips.com/posts/vanilla-javascript-text-to-speech/
-            // TODO: click sound every second
-            // pause 5abbca 59d9ef
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const workoutId = urlParams.get('id');
-            const workout = workouts[workoutId];
-            const audio = new Audio('http://localhost:8000/clave.next')
+            var Timer = function(callback, delay) {
+                // Adapted from https://stackoverflow.com/questions/3969475
+                let timerId, start, remaining = delay;
+                let isPaused = false;
 
-            let i = 0;
-            let current_second = 0;
-            let interval_timer = undefined;
+                this.pause = function() {
+                    window.clearTimeout(timerId);
+                    remaining -= Date.now() - start;
+                    this.isPaused  = true;
+                };
 
-            const type_to_color = {
-                'rest': '#e6fe3b',
-                'activity': '#1db40d',
+                this.resume = function() {
+                    start = Date.now();
+                    window.clearTimeout(timerId);
+                    timerId = window.setTimeout(callback, remaining);
+                    this.isPaused = false;
+                };
+
+                this.resume();
             };
+
+            const getJSON = async url => {
+                try {
+                    const response = await fetch(url);
+                    if(!response.ok) // check if response worked (no 404 errors etc...)
+                    throw new Error(response.statusText);
+
+                    const data = await response.json(); // get JSON from the response
+                    return data; // returns a promise, which resolves to this data value
+                } catch(error) {
+                    return error;
+                }
+            }
+
+            let workout;
+            const urlParams = new URLSearchParams(window.location.search);
+            const workoutURL = urlParams.get('url');
+
+            getJSON(workoutURL).then(data => {
+                workout = data;
+
+                // TODO: move to setup function
+                document.getElementById("workout-name").textContent = workout.name;
+                document.getElementById("step-name").textContent = workout.steps[0].name;
+                document.getElementById("timer").textContent = workout.steps[0].duration_sec;
+            }).catch(error => {
+                console.error(error);
+            })
+
+
+            let stepTimer;
+            let tickInterval;
+            let currentStep = 0;
+            let currentSecond = 0;
+
+            // OK:HSV * 120-66-90
+            const type_to_color = {
+                'rest': '#e6e870',
+                'activity': '#85e87e',
+                'pause': '#c9c9c9'
+            };
+
+            function toggleplay() {
+                if (stepTimer === undefined) {
+                    next(); // Start next step
+                    beep()
+                    document.getElementById('play-pause').innerText = "❙❙ Pause";
+                }
+                else if (stepTimer.isPaused) {
+                    beep()
+                    stepTimer.resume();
+                    tickInterval = setInterval(count_down, 1000);
+                    document.body.style.background = type_to_color['activity'];  // TODO fix
+                    document.getElementById('play-pause').innerText = "❙❙ Pause";
+                } else {
+                    stepTimer.pause();
+                    clearInterval(tickInterval);
+                    document.body.style.background = type_to_color['pause'];
+                    document.getElementById('play-pause').innerText = "▶ Start";
+                }
+            }
 
             function next() {
                 // Get current step
-                step = workout.steps[i];
-                clearInterval(interval_timer);
+                step = workout.steps[currentStep];
+                clearInterval(tickInterval);
 
                 // Update UI
-                document.getElementById("step-name").innerText = step.name;
+                document.getElementById("step-name").textContent = step.name;
+                document.getElementById("timer").textContent = step.duration_sec;
                 document.body.style.background = (step.color !== undefined) ? step.color : type_to_color[step.type];
-                // console.log(step.color !== undefined, document.body.style.background)
 
-                // Speak step name, TODO if audio enable
-                let speech = new SpeechSynthesisUtterance('Now ' + step.name);
-                window.speechSynthesis.speak(speech);
+                if (step.image !== undefined) {
+                    document.getElementById("workout-image").src = step.image;
+                    workoutImage.style.display = "block";
+                } else {
+                    workoutImage = document.getElementById("workout-image")
+                    workoutImage.src = "";
+                    workoutImage.style.display = "none";
+                }
 
-                // Start the countdown timer
-                if (step.duration_sec > 0) {
-                    current_second = step.duration_sec;
-                    interval_timer = setInterval(count_down, 1000);
+                // Speak step name
+                // let speech = new SpeechSynthesisUtterance('Now ' + step.name);
+                // window.speechSynthesis.speak(speech);
+
+                // Kick off next step if any are left
+                if (currentStep + 1 < workout.steps.length) {
+                    const milliseconds = (step.duration_sec + 1) * 1000;
+                    stepTimer = new Timer(next, milliseconds);
+                    currentStep += 1;
+
+                    if (currentStep + 1 < workout.steps.length && step.type == "rest") {
+                        document.getElementById("next-up").textContent = 'Next: ' + workout.steps[currentStep].name;
+                    } else {
+                        document.getElementById("next-up").textContent = '';
+                    }
                 }
                 else {
-                    clearInterval(interval_timer);
-                    document.getElementById("timer").innerText = '00:00';
+                    stepTimer = null;
+                    document.body.style.background = type_to_color['pause'];
+                    document.getElementById('play-pause').innerText = "▶ Start";
                 }
 
-                // Kick off next step
-                if (i + 1 < workout.steps.length) {
-                    setTimeout(next, 1000 * (step.duration_sec + 2));  // why do i need to add + 1?
-                    i += 1;
+                // Start the countdown timer for this step
+                if (step.duration_sec > 0) {
+                    currentSecond = step.duration_sec;
+                    tickInterval = setInterval(count_down, 1000);
+                }
+                else {
+                    clearInterval(tickInterval);
+                    document.getElementById("timer").textContent = '✓';
                 }
             }
 
             function count_down() {
-                console.log(current_second);
-                audio.play();
-                document.getElementById("timer").innerText = Number(current_second).toHHMMSS();
-                if (current_second > 0) {
-                    current_second -= 1;
+                if (currentSecond > 0) {
+                    currentSecond -= 1;
                 }
+                if (currentSecond == 0) {
+                    beep()
+                    // document.getElementById('tick').load();
+                    // document.getElementById('tick').play();
+                }
+                document.getElementById("timer").textContent = currentSecond;
             }
 
-            function begin() {
-                next();
-                            // Remove button
+            const context = new AudioContext();
+            // https://stackoverflow.com/a/59570752
+            const beep = (freq = 520, duration = 200, vol = 100) => {
+                const oscillator = context.createOscillator();
+                const gain = context.createGain();
+                oscillator.connect(gain);
+                oscillator.frequency.value = freq;
+                oscillator.type = "sine";
+                gain.connect(context.destination);
+                gain.gain.value = vol * 0.01;
+                oscillator.start(context.currentTime);
+                oscillator.stop(context.currentTime + duration * 0.001);
             }
 
-            window.onload = function() {
-                document.getElementById("workout-name").innerText = workout.name;
+            const beep2 = () => {
+                const oscillator = context.createOscillator();
+                const gain = context.createGain();
+                oscillator.connect(gain);
+                gain.connect(context.destination);
+
+                oscillator.frequency.value = 440;
+                oscillator.type = 'triangle';
+                gain.gain.value = 1/1000;
+
+                oscillator.start(context.currentTime);
+
+                gain.gain.exponentialRampToValueAtTime(0.8, context.currentTime + 0.5);
+                gain.gain.setTargetAtTime(1/1000, context.currentTime + 1.5 - 0.05, 0.02);
+                oscillator.stop(context.currentTime + 1.5);
             }
 
-            Number.prototype.toHHMMSS = function () {
-                // Adapted from https://stackoverflow.com/questions/6312993/
-                var sec_num = this.valueOf();
-                var hours   = Math.floor(sec_num / 3600);
-                var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-                var seconds = sec_num - (hours * 3600) - (minutes * 60);
-
-                if (hours   < 10) {hours   = "0"+hours;}
-                if (minutes < 10) {minutes = "0"+minutes;}
-                if (seconds < 10) {seconds = "0"+seconds;}
-
-                // return hours+':'+minutes+':'+seconds;
-                return minutes + ':' + seconds;
+            window.onload = () => {
+                document.body.onkeyup = function(event) {
+                    if (event.code === 'Space') {
+                        toggleplay();
+                    } else if (event.code == 'KeyB') {
+                        beep2()
+                    }
+                }
             }
         </script>
     </head>
     <body>
         <div id="container">
-            <h1 id="workout-name" />
-            <h2 id="step-name" />
-            <h3 id="timer" />
-            <button id="begin-button" onclick="begin()">Begin Workout</button>
+            <div class="header">
+                <p id="workout-name" />
+            </div>
+            <hr />
+            <div class="subheader">
+                <p id="step-name" />
+            </div>
+            <div class="main">
+                <p id="timer">0</p>
+            </div>
+            <div class="superfooter">
+                <p id="next-up" />
+            </div>
+            <div class="footer">
+                <img id="workout-image" />
+                <button id="play-pause" onclick="toggleplay()">&#9654; Start</button>
+            </div>
         </div>
     </body>
 </html>
